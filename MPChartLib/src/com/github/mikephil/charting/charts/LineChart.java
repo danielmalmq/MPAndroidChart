@@ -2,8 +2,11 @@
 package com.github.mikephil.charting.charts;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.util.AttributeSet;
 
+import com.github.mikephil.charting.R;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.renderer.LineChartRenderer;
@@ -31,7 +34,20 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
     protected void init(AttributeSet attrs) {
         super.init(attrs);
 
-        mRenderer = new LineChartRenderer(this, mAnimator, mViewPortHandler);
+        LineChartRenderer lineChartRenderer = new LineChartRenderer(this, mAnimator, mViewPortHandler);
+        if (attrs != null) {
+            TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.LineChart);
+            boolean hasGradientBackground = typedArray.hasValue(R.styleable.LineChart_gradient_top_background) || typedArray.hasValue(R.styleable.LineChart_gradient_bottom_background);
+            int topBackgroundColor = typedArray.getColor(R.styleable.LineChart_gradient_top_background, Color.TRANSPARENT);
+            int bottomBackgroundColor = typedArray.getColor(R.styleable.LineChart_gradient_bottom_background, Color.TRANSPARENT);
+            typedArray.recycle();
+
+            if (hasGradientBackground) {
+                lineChartRenderer.setBackgroundGradientColors(topBackgroundColor, bottomBackgroundColor);
+            }
+        }
+
+        mRenderer = lineChartRenderer;
     }
 
     @Override

@@ -3,9 +3,10 @@ package com.github.mikephil.charting.renderer;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.drawable.Drawable;
+import android.graphics.Shader;
 
 import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.buffer.CircleBuffer;
@@ -20,10 +21,9 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
-public class LineChartRenderer extends LineRadarRenderer {
+public class LineChartRenderer extends LineScatterCandleRadarRenderer {
 
     protected LineDataProvider mChart;
 
@@ -36,7 +36,7 @@ public class LineChartRenderer extends LineRadarRenderer {
      * Bitmap object used for drawing the paths (otherwise they are too long if
      * rendered directly on the canvas)
      */
-    protected WeakReference<Bitmap> mDrawBitmap;
+    protected Bitmap mDrawBitmap;
 
     /**
      * on this canvas, the paths are rendered, it is initialized with the
@@ -44,17 +44,16 @@ public class LineChartRenderer extends LineRadarRenderer {
      */
     protected Canvas mBitmapCanvas;
 
-    /**
-     * the bitmap configuration to be used
-     */
-    protected Bitmap.Config mBitmapConfig = Bitmap.Config.ARGB_8888;
-
     protected Path cubicPath = new Path();
     protected Path cubicFillPath = new Path();
 
     protected LineBuffer[] mLineBuffers;
 
     protected CircleBuffer[] mCircleBuffers;
+    private int mTopBackgroundColor;
+    private int mBottomBackgroundColor;
+    private boolean mHasGradientBackground;
+    private Paint mGradientBackgroundPaint;
 
     public LineChartRenderer(LineDataProvider chart, ChartAnimator animator,
                              ViewPortHandler viewPortHandler) {
@@ -87,18 +86,18 @@ public class LineChartRenderer extends LineRadarRenderer {
         int height = (int) mViewPortHandler.getChartHeight();
 
         if (mDrawBitmap == null
-                || (mDrawBitmap.get().getWidth() != width)
-                || (mDrawBitmap.get().getHeight() != height)) {
+                || (mDrawBitmap.getWidth() != width)
+                || (mDrawBitmap.getHeight() != height)) {
 
             if (width > 0 && height > 0) {
 
-                mDrawBitmap = new WeakReference<Bitmap>(Bitmap.createBitmap(width, height, mBitmapConfig));
-                mBitmapCanvas = new Canvas(mDrawBitmap.get());
+                mDrawBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
+                mBitmapCanvas = new Canvas(mDrawBitmap);
             } else
                 return;
         }
 
-        mDrawBitmap.get().eraseColor(Color.TRANSPARENT);
+        mDrawBitmap.eraseColor(Color.TRANSPARENT);
 
         LineData lineData = mChart.getLineData();
 
@@ -108,7 +107,7 @@ public class LineChartRenderer extends LineRadarRenderer {
                 drawDataSet(c, set);
         }
 
-        c.drawBitmap(mDrawBitmap.get(), 0, 0, mRenderPaint);
+        c.drawBitmap(mDrawBitmap, 0, 0, mRenderPaint);
     }
 
     protected void drawDataSet(Canvas c, ILineDataSet dataSet) {
@@ -259,14 +258,7 @@ public class LineChartRenderer extends LineRadarRenderer {
 
         trans.pathValueToPixel(spline);
 
-        final Drawable drawable = dataSet.getFillDrawable();
-        if (drawable != null) {
-
-            drawFilledPath(c, spline, drawable);
-        } else {
-
-            drawFilledPath(c, spline, dataSet.getFillColor(), dataSet.getFillAlpha());
-        }
+        drawFilledPath(c, spline, dataSet.getFillColor(), dataSet.getFillAlpha());
     }
 
     /**
@@ -363,14 +355,33 @@ public class LineChartRenderer extends LineRadarRenderer {
 
         trans.pathValueToPixel(filled);
 
-        final Drawable drawable = dataSet.getFillDrawable();
-        if (drawable != null) {
+        drawFilledPath(c, filled, dataSet.getFillColor(), dataSet.getFillAlpha());
+    }
 
-            drawFilledPath(c, filled, drawable);
-        } else {
+    /**
+     * Draws the provided path in filled mode with the provided color and alpha.
+     * Special thanks to Angelo Suzuki (https://github.com/tinsukE) for this.
+     *
+     * @param c
+     * @param filledPath
+     * @param fillColor
+     * @param fillAlpha
+     */
+    protected void drawFilledPath(Canvas c, Path filledPath, int fillColor, int fillAlpha) {
+        c.save();
+        c.clipPath(filledPath);
 
-            drawFilledPath(c, filled, dataSet.getFillColor(), dataSet.getFillAlpha());
+        if (mHasGradientBackground) {
+            LinearGradient shader = new LinearGradient(0, 0, 0, c.getHeight(), mTopBackgroundColor, mBottomBackgroundColor, Shader.TileMode.MIRROR);
+            mGradientBackgroundPaint.setShader(shader);
+            c.drawRect(0, 0, c.getWidth(), c.getHeight(), mGradientBackgroundPaint);
         }
+        else {
+            int color = (fillAlpha << 24) | (fillColor & 0xffffff);
+            c.drawColor(color);
+        }
+
+        c.restore();
     }
 
     /**
@@ -577,34 +588,21 @@ public class LineChartRenderer extends LineRadarRenderer {
     }
 
     /**
-     * Sets the Bitmap.Config to be used by this renderer.
-     * Default: Bitmap.Config.ARGB_8888
-     * Use Bitmap.Config.ARGB_4444 to consume less memory.
-     *
-     * @param config
-     */
-    public void setBitmapConfig(Bitmap.Config config) {
-        mBitmapConfig = config;
-        releaseBitmap();
-    }
-
-    /**
-     * Returns the Bitmap.Config that is used by this renderer.
-     *
-     * @return
-     */
-    public Bitmap.Config getBitmapConfig() {
-        return mBitmapConfig;
-    }
-
-    /**
      * Releases the drawing bitmap. This should be called when {@link LineChart#onDetachedFromWindow()}.
      */
     public void releaseBitmap() {
         if (mDrawBitmap != null) {
-            mDrawBitmap.get().recycle();
-            mDrawBitmap.clear();
+            mDrawBitmap.recycle();
             mDrawBitmap = null;
         }
+    }
+
+    public void setBackgroundGradientColors(int topBackgroundColor, int bottomBackgroundColor) {
+        mGradientBackgroundPaint = new Paint();
+
+        mHasGradientBackground = true;
+
+        mTopBackgroundColor = topBackgroundColor;
+        mBottomBackgroundColor = bottomBackgroundColor;
     }
 }
