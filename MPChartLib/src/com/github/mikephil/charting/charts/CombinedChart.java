@@ -70,8 +70,8 @@ public class CombinedChart extends BarLineChartBase<CombinedData> implements Lin
     }
 
     @Override
-    protected void init() {
-        super.init();
+    protected void init(AttributeSet attrs) {
+        super.init(attrs);
 
         setHighlighter(new CombinedHighlighter(this));
 
