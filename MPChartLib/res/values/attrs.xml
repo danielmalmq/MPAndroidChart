@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="IconPieChart">
+        <attr name="icon_width" format="dimension" />
+        <attr name="icon_height" format="dimension" />
+        <attr name="chart_inset" format="float" />
+        <attr name="radius_icon_divider" format="float" />
+    </declare-styleable>
+
+    <declare-styleable name="LineChart">
+        <attr name="gradient_top_background" format="color" />
+        <attr name="gradient_bottom_background" format="color" />
+    </declare-styleable>
+</resources>

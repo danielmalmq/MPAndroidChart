@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <declare-styleable name="LineChart">
-        <attr name="gradient_top_background" format="color" />
-        <attr name="gradient_bottom_background" format="color" />
-    </declare-styleable>
-</resources>
