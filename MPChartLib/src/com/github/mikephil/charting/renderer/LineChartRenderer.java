@@ -54,6 +54,8 @@ public class LineChartRenderer extends LineScatterCandleRadarRenderer {
     private int mBottomBackgroundColor;
     private boolean mHasGradientBackground;
     private Paint mGradientBackgroundPaint;
+    private LinearGradient mGradientShader;
+    private int mGradientShaderHeight;
 
     public LineChartRenderer(LineDataProvider chart, ChartAnimator animator,
                              ViewPortHandler viewPortHandler) {
@@ -372,8 +374,11 @@ public class LineChartRenderer extends LineScatterCandleRadarRenderer {
         c.clipPath(filledPath);
 
         if (mHasGradientBackground) {
-            LinearGradient shader = new LinearGradient(0, 0, 0, c.getHeight(), mTopBackgroundColor, mBottomBackgroundColor, Shader.TileMode.MIRROR);
-            mGradientBackgroundPaint.setShader(shader);
+            if (mGradientShader == null || mGradientShaderHeight != c.getHeight()) {
+                mGradientShaderHeight = c.getHeight();
+                mGradientShader = new LinearGradient(0, 0, 0, mGradientShaderHeight, mTopBackgroundColor, mBottomBackgroundColor, Shader.TileMode.MIRROR);
+                mGradientBackgroundPaint.setShader(mGradientShader);
+            }
             c.drawRect(0, 0, c.getWidth(), c.getHeight(), mGradientBackgroundPaint);
         }
         else {
