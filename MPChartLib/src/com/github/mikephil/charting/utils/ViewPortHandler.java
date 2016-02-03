@@ -230,14 +230,9 @@ public class ViewPortHandler {
         return save;
     }
 
-    /**
-     * Resets all zooming and dragging and makes the chart fit exactly it's
-     * bounds.
-     */
-    public Matrix fitScreen() {
-
+    public Matrix fitScreen(float minScaleY) {
         mMinScaleX = 1f;
-        mMinScaleY = 1f;
+        mMinScaleY = minScaleY;
 
         Matrix save = new Matrix();
         save.set(mMatrixTouch);
@@ -250,11 +245,19 @@ public class ViewPortHandler {
         vals[Matrix.MTRANS_X] = 0f;
         vals[Matrix.MTRANS_Y] = 0f;
         vals[Matrix.MSCALE_X] = 1f;
-        vals[Matrix.MSCALE_Y] = 1f;
+        vals[Matrix.MSCALE_Y] = mMinScaleY;
 
         save.setValues(vals);
 
         return save;
+    }
+
+    /**
+     * Resets all zooming and dragging and makes the chart fit exactly it's
+     * bounds.
+     */
+    public Matrix fitScreen() {
+        return fitScreen(1f);
     }
 
     /**
