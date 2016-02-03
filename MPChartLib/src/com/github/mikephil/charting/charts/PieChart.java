@@ -87,6 +87,7 @@ public class PieChart extends PieRadarChartBase<PieData> {
     private float mCenterTextRadiusPercent = 1.f;
 
     protected float mMaxAngle = 360f;
+    private boolean mHoleSelectable;
 
     public PieChart(Context context) {
         super(context);
@@ -647,4 +648,11 @@ public class PieChart extends PieRadarChartBase<PieData> {
         super.onDetachedFromWindow();
     }
 
+    public boolean isHoleSelectable() {
+        return mHoleSelectable;
+    }
+
+    public void setHoleSelectable(boolean holeSelectable) {
+        mHoleSelectable = holeSelectable;
+    }
 }

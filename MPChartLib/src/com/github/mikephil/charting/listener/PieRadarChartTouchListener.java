@@ -154,8 +154,10 @@ public class PieRadarChartTouchListener extends ChartTouchListener<PieRadarChart
         float distance = mChart.distanceToCenter(e.getX(), e.getY());
 
         // check if a slice was touched
-        if (distance > mChart.getRadius()) {
-
+        if (distance > mChart.getRadius() ||
+                (mChart instanceof PieChart
+                        && !((PieChart) mChart).isHoleSelectable()
+                        && (distance < (((PieChart)mChart).getHoleRadius()/100) * mChart.getRadius()))) {
             // if no slice was touched, highlight nothing
 
             if (mLastHighlighted == null)
