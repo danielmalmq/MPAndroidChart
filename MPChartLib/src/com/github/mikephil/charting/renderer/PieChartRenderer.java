@@ -301,8 +301,7 @@ public class PieChartRenderer extends DataRenderer {
             }
 
             // draw the hole-circle
-            mBitmapCanvas.drawCircle(center.x, center.y,
-                    radius / 100 * holeRadius, mHolePaint);
+            mBitmapCanvas.drawCircle(center.x, center.y, radius / 100 * holeRadius, mHolePaint);
         }
     }
 

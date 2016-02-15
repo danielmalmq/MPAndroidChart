@@ -22,8 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class IconPieChartRenderer extends PieChartRenderer {
-    private final float mChartInset;
     private final float mRadiusIconDivider;
+    private final float mCircleRadius;
+    private final float mCircleWidth;
     protected IconPieChart mChart;
 
     private final Resources mResources;
@@ -32,14 +33,17 @@ public class IconPieChartRenderer extends PieChartRenderer {
     private int mIconXOffset;
     private int mIconYOffset;
 
-    public IconPieChartRenderer(IconPieChart chart, ChartAnimator animator, ViewPortHandler viewPortHandler, Resources resources, PointF iconSize, float chartInset, float radiusIconDivider) {
+    public IconPieChartRenderer(IconPieChart chart, ChartAnimator animator, ViewPortHandler viewPortHandler, Resources resources, PointF iconSize, float radiusIconDivider, float circleRadius, float circleWidth) {
         super(chart, animator, viewPortHandler);
 
         mChart = chart;
         mResources = resources;
         mIconSize = iconSize;
-        mChartInset = chartInset;
         mRadiusIconDivider = radiusIconDivider;
+
+        mCircleRadius = circleRadius;
+        mCircleWidth = circleWidth;
+
     }
 
     @Override
@@ -54,7 +58,6 @@ public class IconPieChartRenderer extends PieChartRenderer {
         float[] drawAngles = mChart.getDrawAngles();
 
         for (int j = 0; j < dataSet.getEntryCount(); j++) {
-
             float sliceAngle = drawAngles[j];
             float sliceSpace = dataSet.getSliceSpace();
 
@@ -71,7 +74,9 @@ public class IconPieChartRenderer extends PieChartRenderer {
                 }
 
                 RectF rectInner = new RectF(mChart.getCircleBox());
-                rectInner.inset(Math.max(mIconSize.x, mIconSize.y)*mChartInset, Math.max(mIconSize.x, mIconSize.y)*mChartInset);
+                float centerX = rectInner.centerX();
+                float centerY = rectInner.centerY();
+                rectInner.set(centerX-mCircleRadius, centerY-mCircleRadius, centerX+mCircleRadius, centerY+mCircleRadius);
 
                 mBitmapCanvas.drawArc(rectInner,
                         rotationAngle + (angle + sliceSpace / 2f) * mAnimator.getPhaseY(),
@@ -81,6 +86,24 @@ public class IconPieChartRenderer extends PieChartRenderer {
 
             angle += sliceAngle * mAnimator.getPhaseX();
         }
+    }
+
+    /**
+     * draws the hole in the center of the chart and the transparent circle /
+     * hole
+     */
+    protected void drawHole(Canvas c) {
+        if (mChart.isDrawHoleEnabled()) {
+            PointF center = mChart.getCenterCircleBox();
+            float transparentHoleRadius = mCircleRadius - mCircleWidth;
+
+            // draw the hole-circle
+            mBitmapCanvas.drawCircle(center.x, center.y, transparentHoleRadius, mHolePaint);
+        }
+    }
+
+    public float getRadius() {
+        return mCircleRadius;
     }
 
     @Override

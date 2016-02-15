@@ -3,7 +3,8 @@
     <declare-styleable name="IconPieChart">
         <attr name="icon_width" format="dimension" />
         <attr name="icon_height" format="dimension" />
-        <attr name="chart_inset" format="float" />
+        <attr name="circle_radius" format="dimension" />
+        <attr name="circle_thickness" format="dimension" />
         <attr name="radius_icon_divider" format="float" />
     </declare-styleable>
 

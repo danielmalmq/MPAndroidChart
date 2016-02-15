@@ -27,19 +27,22 @@ public class IconPieChart extends PieChart {
 
         int iconWidth = (int) (24 * getResources().getDisplayMetrics().density);
         int iconHeight = (int) (24 * getResources().getDisplayMetrics().density);
-        float chartInset = 1.3f;
         float radiusIconDivider = 4f;
+        float circleRadius = 100;
+        float circleWidth = 10;
 
         if (attrs != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.IconPieChart);
             iconWidth = typedArray.getDimensionPixelSize(R.styleable.IconPieChart_icon_width, iconWidth);
             iconHeight = typedArray.getDimensionPixelSize(R.styleable.IconPieChart_icon_height, iconHeight);
-            chartInset = typedArray.getFloat(R.styleable.IconPieChart_chart_inset, chartInset);
             radiusIconDivider = typedArray.getFloat(R.styleable.IconPieChart_radius_icon_divider, radiusIconDivider);
+
+            circleRadius = typedArray.getDimension(R.styleable.IconPieChart_circle_radius, 100);
+            circleWidth = typedArray.getDimension(R.styleable.IconPieChart_circle_thickness, 10);
 
             typedArray.recycle();
         }
 
-        mRenderer = new IconPieChartRenderer(this, mAnimator, mViewPortHandler, getResources(), new PointF(iconWidth, iconHeight), chartInset, radiusIconDivider);
+        mRenderer = new IconPieChartRenderer(this, mAnimator, mViewPortHandler, getResources(), new PointF(iconWidth, iconHeight), radiusIconDivider, circleRadius, circleWidth);
     }
 }
