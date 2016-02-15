@@ -525,6 +525,10 @@ public abstract class Utils {
     private static Rect mDrawTextRectBuffer = new Rect();
     private static Paint.FontMetrics mFontMetricsBuffer = new Paint.FontMetrics();
 
+    private static final String allChars = "abcdefghijklmnopqrstuvwxyzåäöABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ0123456789";
+    private static int allCharsHeight = -1;
+    private static float allCharsHeightFromTextSize = -1;
+
     public static void drawText(Canvas c, String text, float x, float y,
                                 Paint paint,
                                 PointF anchor, float angleDegrees) {
@@ -532,17 +536,19 @@ public abstract class Utils {
         float drawOffsetX = 0.f;
         float drawOffsetY = 0.f;
 
+        if (allCharsHeight <= 0 || allCharsHeightFromTextSize != paint.getTextSize()) {
+            paint.getTextBounds(allChars, 0, allChars.length(), mDrawTextRectBuffer);
+            allCharsHeight = mDrawTextRectBuffer.height();
+            allCharsHeightFromTextSize = paint.getTextSize();
+        }
+
+        final float lineHeight = allCharsHeight;
+        drawOffsetY += lineHeight/1.5f;
+
         paint.getTextBounds(text, 0, text.length(), mDrawTextRectBuffer);
 
-        final float lineHeight = mDrawTextRectBuffer.height();
-
-                // Android sometimes has pre-padding
+        // Android sometimes has pre-padding
         drawOffsetX -= mDrawTextRectBuffer.left;
-
-        // Android does not snap the bounds to line boundaries,
-        //  and draws from bottom to top.
-        // And we want to normalize it.
-        drawOffsetY += lineHeight;
 
         // To have a consistent point of reference, we always draw left-aligned
         Paint.Align originalTextAlign = paint.getTextAlign();
